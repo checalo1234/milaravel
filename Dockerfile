@@ -1,7 +1,6 @@
-# Usa la imagen oficial PHP con Apache (puedes usar php-cli si prefieres)
-FROM php:8.1-cli
+FROM php:8.2-cli
 
-# Instala dependencias necesarias y extensiones PHP
+# Instalar dependencias del sistema
 RUN apt-get update && apt-get install -y \
     git \
     unzip \
@@ -13,22 +12,20 @@ RUN apt-get update && apt-get install -y \
     libzip-dev \
     libpq-dev \
     && docker-php-ext-install pdo pdo_mysql pdo_pgsql mbstring zip exif pcntl
-
-# Instala Composer globalmente
+# Instalar Composer
 RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
 
-# Copia los archivos del proyecto al contenedor
+# Crear directorio de la app
 WORKDIR /var/www/html
+
+# Copiar archivos
 COPY . .
 
-# Instala dependencias de PHP con Composer sin dev y optimizando autoloader
+# Instalar dependencias
 RUN composer install --no-dev --optimize-autoloader
 
-# Da permisos correctos a storage y cache
-RUN chmod -R 775 storage bootstrap/cache
-
-# Expone el puerto que usará Laravel
+# Exponer el puerto
 EXPOSE 10000
 
-# Ejecuta migraciones y levanta el servidor de Laravel
-CMD php artisan migrate --force && php artisan serve --host=0.0.0.0 --port=10000
+# Comando para iniciar Laravel
+CMD ["php", "artisan", "serve", "--host=0.0.0.0", "--port=10000"]
